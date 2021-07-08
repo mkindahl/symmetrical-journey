@@ -16,6 +16,7 @@ jobs:
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          git log --oneline
           git log --oneline $GITHUB_SHA~2..
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           echo "TAG: $tag"
