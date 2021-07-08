@@ -1,0 +1,31 @@
+name: Release Pipeline
+on:
+  workflow_dispatch:
+  pull_request:
+jobs:
+  show_commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout TimescaleDB
+        uses: actions/checkout@v2
+      - name: Fetch list of all commits since last tag
+        id: fetch
+        run: |
+          git fetch --tags --all
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          git log --oneline $GITHUB_REF~2..
+          tag=$(git describe --tags --abbrev=0 $GITHUB_REF)
+          output=$(git log --format=":black_small_square: %s" $tag..)
+          echo "::set-output name=commits::$output"
+      - name: Send Slack Message
+        uses: archive/github-actions-slack@v2.0.0
+        id: notify
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL }}
+          slack-text: ${{ steps.fetch.outputs.commits }}
+      - name: Result from "Send Slack Message"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
