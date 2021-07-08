@@ -8,16 +8,19 @@ jobs:
     steps:
       - name: Checkout TimescaleDB
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Fetch list of all commits since last tag
         id: fetch
+        shell: bash -x {0}
         run: |
-          git fetch --tags --all
           echo "GITHUB_SHA: $GITHUB_SHA"
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
           git log --oneline
           git log --oneline $GITHUB_SHA~2..
+          git describe --tags --abbrev=0 $GITHUB_SHA
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           echo "TAG: $tag"
           output=$(git log --format=":black_small_square: %s" $tag..)
