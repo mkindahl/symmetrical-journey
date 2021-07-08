@@ -16,9 +16,11 @@ jobs:
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
-          git log --oneline $GITHUB_REF~2..
-          tag=$(git describe --tags --abbrev=0 $GITHUB_REF)
+          git log --oneline $GITHUB_SHA~2..
+          tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
+          echo "TAG: $tag"
           output=$(git log --format=":black_small_square: %s" $tag..)
+          echo -e "OUTPUT:\n$output"
           echo "::set-output name=commits::$output"
       - name: Send Slack Message
         uses: archive/github-actions-slack@v2.0.0
