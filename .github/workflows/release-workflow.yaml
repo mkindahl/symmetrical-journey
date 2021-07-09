@@ -14,24 +14,16 @@ jobs:
         id: fetch
         shell: bash -x {0}
         run: |
-          echo "GITHUB_SHA: $GITHUB_SHA"
-          echo "GITHUB_REF: $GITHUB_REF"
-          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
-          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
-          git log --oneline
-          git log --oneline $GITHUB_SHA~2..
-          git describe --tags --abbrev=0 $GITHUB_SHA
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
-          echo "TAG: $tag"
           output=$(git log --format=":black_small_square: %s" $tag.. | perl -pe 's/\n/\\n/g')
-          echo -e "OUTPUT:$output"
           echo "::set-output name=commits::$output"
+          echo "::set-output name=release::$tag"
       - name: Send Slack Message
         uses: archive/github-actions-slack@v2.0.0
         id: notify
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
           slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
-          slack-text: ${{ steps.fetch.outputs.commits }}
+          slack-text: Creating release ${{ steps.fetch.outputs.release }} with commits:\n${{ steps.fetch.outputs.commits }}
       - name: Result from "Send Slack Message"
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
