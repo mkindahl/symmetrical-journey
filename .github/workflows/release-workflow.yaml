@@ -10,10 +10,22 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/show-commits
-        id: show
+      - name: Check branch
+        uses: ./.github/actions/check-release
+      - name: Fetch list of all commits since last tag
+        id: fetch
+        shell: bash -x {0}
+        run: |
+          tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
+          output=$(git log --format=":black_small_square: %s" $tag.. | perl -pe 's/\n/\\n/g')
+          echo "::set-output name=commits::$output"
+          echo "::set-output name=release::$tag"
+      - name: Send message with commits in release
+        uses: archive/github-actions-slack@v2.0.0
+        id: notify
         with:
-          header: Create magic release
-      - name: Result from show commits
-        run: echo "The result was ${{ steps.show.outputs.result }}"
-
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
+          slack-text: Creating magic release with number ${{ steps.fetch.outputs.release }} containing commits:\n${{ steps.fetch.outputs.commits }}
+      - name: Result from "Send Slack Message"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
