@@ -6,10 +6,12 @@ jobs:
   show_commits:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout TimescaleDB
+      - name: Checkout Repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Check branch
+        uses: ./.github/actions/check-release
       - name: Fetch list of all commits since last tag
         id: fetch
         shell: bash -x {0}
@@ -18,12 +20,12 @@ jobs:
           output=$(git log --format=":black_small_square: %s" $tag.. | perl -pe 's/\n/\\n/g')
           echo "::set-output name=commits::$output"
           echo "::set-output name=release::$tag"
-      - name: Send Slack Message
+      - name: Send message with commits in release
         uses: archive/github-actions-slack@v2.0.0
         id: notify
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
           slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
-          slack-text: Creating release ${{ steps.fetch.outputs.release }} with commits:\n${{ steps.fetch.outputs.commits }}
+          slack-text: Creating magic release with number ${{ steps.fetch.outputs.release }} containing commits:\n${{ steps.fetch.outputs.commits }}
       - name: Result from "Send Slack Message"
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"

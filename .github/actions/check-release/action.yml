@@ -1,0 +1,26 @@
+name: Check Branch
+description: Check that the branch is OK
+inputs:
+  header:
+    description: 'Header line'
+    required: true
+    default: 'Create release'
+outputs:
+  release:
+    description: "Release"
+    value: ${{ steps.fetch.outputs.release }}
+  commits:
+    description: "Commits"
+    value: ${{ steps.notify.outputs.slack-result }}
+runs:
+  using: "composite"
+  steps:
+    - id: fetch
+      name: Check if the HEAD is tagged
+      shell: bash -x {0}
+      run: |
+        if git describe --tags $GITHUB_SHA | grep -qe-; then
+          exit 1
+        else
+          exit 0
+        fi
