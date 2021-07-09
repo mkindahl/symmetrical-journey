@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
 jobs:
-  show_commits:
+  check-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -29,3 +29,8 @@ jobs:
           slack-text: Creating magic release with number ${{ steps.fetch.outputs.release }} containing commits:\n${{ steps.fetch.outputs.commits }}
       - name: Result from "Send Slack Message"
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
+
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello World!"
