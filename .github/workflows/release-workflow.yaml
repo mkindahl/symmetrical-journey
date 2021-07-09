@@ -32,5 +32,6 @@ jobs:
 
   say-hello:
     runs-on: ubuntu-latest
+    needs: check-release
     steps:
       - run: echo "Hello World!"
