@@ -26,12 +26,108 @@ jobs:
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
           slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
-          slack-text: Creating magic release with number ${{ steps.fetch.outputs.release }} containing commits:\n${{ steps.fetch.outputs.commits }}
+          slack-text: Starting release ${{ steps.fetch.outputs.release }} containing commits:\n${{ steps.fetch.outputs.commits }}
       - name: Result from "Send Slack Message"
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
 
-  say-hello:
+  test-release:
     runs-on: ubuntu-latest
     needs: check-release
     steps:
-      - run: echo "Hello World!"
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Build
+        run: sleep 20
+      - name: Run tests
+        run: |
+          sleep 10
+          echo "Tests passed"
+
+  build-rpm:
+    runs-on: ubuntu-latest
+    needs: test-release
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Get release
+        id: fetch
+        run: |
+          tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
+          echo "::set-output name=release::$tag"
+      - name: Build RPM package
+        run: sleep 10
+      - name: Report success
+        uses: archive/github-actions-slack@v2.0.0
+        id: notify
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
+          slack-text: RPM packages for release ${{ steps.fetch.outputs.release }}
+      - name: Result from "Send Slack Message"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
+
+  publish-rpm:
+    runs-on: ubuntu-latest
+    needs: build-rpm
+    steps:
+      - run: |
+          sleep 10
+          echo "RPM published"
+
+  build-debian:
+    runs-on: ubuntu-latest
+    needs: test-release
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Get release
+        id: fetch
+        run: |
+          tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
+          echo "::set-output name=release::$tag"
+      - name: Build Debian package
+        run: sleep 10
+      - name: Report success
+        uses: archive/github-actions-slack@v2.0.0
+        id: notify
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
+          slack-text: Debian packages for release ${{ steps.fetch.outputs.release }}
+      - name: Result from "Send Slack Message"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
+
+  publish-debian:
+    runs-on: ubuntu-latest
+    needs: build-debian
+    steps:
+      - run: echo "Debian published"
+
+  build-windows:
+    runs-on: ubuntu-latest
+    needs: test-release
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Get release
+        id: fetch
+        run: |
+          tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
+          echo "::set-output name=release::$tag"
+      - name: Build Windows package
+        run: sleep 10
+      - name: Report success
+        uses: archive/github-actions-slack@v2.0.0
+        id: notify
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL_EXPERIMENTAL }}
+          slack-text: Windows packages for release ${{ steps.fetch.outputs.release }}
+      - name: Result from "Send Slack Message"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
+
+  publish-windows:
+    runs-on: ubuntu-latest
+    needs: build-windows
+    steps:
+      - run: echo "Windows published"
