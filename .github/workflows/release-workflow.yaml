@@ -16,7 +16,7 @@ jobs:
         id: fetch
         shell: bash -x {0}
         run: |
-          git log
+          git log --oneline
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           output=$(git log --format=":black_small_square: %s" $tag.. | perl -pe 's/\n/\\n/g')
           echo "::set-output name=commits::$output"
@@ -53,7 +53,8 @@ jobs:
       - name: Get release
         id: fetch
         run: |
-          git log
+          git fetch --tags
+          git log --oneline
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           echo "::set-output name=release::$tag"
       - name: Build RPM package
@@ -85,7 +86,8 @@ jobs:
       - name: Get release
         id: fetch
         run: |
-          git log
+          git fetch --tags
+          git log --oneline
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           echo "::set-output name=release::$tag"
       - name: Build Debian package
@@ -115,7 +117,8 @@ jobs:
       - name: Get release
         id: fetch
         run: |
-          git log
+          git fetch --tags
+          git log --oneline
           tag=$(git describe --tags --abbrev=0 $GITHUB_SHA)
           echo "::set-output name=release::$tag"
       - name: Build Windows package
